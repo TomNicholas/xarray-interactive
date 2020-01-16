@@ -39,10 +39,6 @@ class InteractiveDataArrayAccessor:
         return value of func
         """
 
-        if func is None:
-            raise ValueError("Must provide function to apply")
-        # TODO inspect func to ensure it's a valid function on a DataArray?
-
         return interactions.indexing(da=self.da, func=func, func_kwargs={},
                                      continuous_update=continuous_update,
                                      **indexing_kwargs)
@@ -54,7 +50,7 @@ class InteractiveDataArrayAccessor:
 
         Use like:
 
-        `da.interactive.apply(xplot.pcolormesh, time=20, position=4.5)`
+        `da.interactive.plot(xplot.pcolormesh, time=20, position=4.5)`
 
         which would plot `da` using xarray's wrapping of `pcolormesh`, creating
         interactive sliders for time and position.
