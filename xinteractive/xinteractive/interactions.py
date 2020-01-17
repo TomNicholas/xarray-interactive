@@ -1,14 +1,16 @@
-from ipywidgets import interact, fixed
+import ipywidgets as widgets
+
+from xarray.core.utils import either_dict_or_kwargs
 
 
 def indexing(da, func, func_kwargs={}, continuous_update=True,
-             **indexing_kwargs):
+             **indexers_kwargs):
     """
     Interactively choose indexes of a DataArray on which to apply func.
 
     Use in the same way as ipyywidgets.interact, i.e. as a function
 
-    `interactive.indexing(f=lambda da: np.sin(da), time=20, position=4.5)
+    `interactive.indexing(f=lambda da: np.sin(da), time=20, position=4.5)`
 
     or as a decorator
 
@@ -40,13 +42,12 @@ def indexing(da, func, func_kwargs={}, continuous_update=True,
         raise ValueError("Must provide function to apply")
     # TODO inspect func to ensure it's a valid function on a DataArray?
 
-    indexing_widgets = wigetize_indexers(da, **indexing_kwargs)
-    wrapped_func = functools.partial(func, da, **func_kwargs)
-    return interact(wrapped_func, **indexing_widgets,
-                    continuous_update=continuous_update)
+    indexing_widgets = wigetize_indexers(da, **indexers_kwargs)
+    return widgets.interact(func, da=widgets.fixed(da), **indexing_widgets,
+                            continuous_update=continuous_update)
 
 
-def wigetize_indexers(da, **indexing_kwargs):
+def wigetize_indexers(da, *indexers, **indexers_kwargs):
     """
     Developer API for constructing widgets from a DataArray and its indexing
     arguments.
@@ -62,13 +63,28 @@ def wigetize_indexers(da, **indexing_kwargs):
     -------
     selection_widgets
     """
-    dims = list(da.dims.keys())
-    coords = list(da.coords.keys())
-    dim_coords = [dim for dim in dims if dim in coords]
 
-    selection_widgets = {create_dim_widget(dim, **indexing_kwargs)
-                         for dim in dims}
-    return selection_widgets
+    # TODO if dim use isel, if coord use sel?
+
+    # Apply same logic that's in `xarray.variable.isel()`
+    # TODO relax indexers=None constraint by adding it as positional args?
+    if indexers is not ():
+        print(indexers)
+        raise NotImplementedError("Currently only accepting kwarg indexers")
+    indexers = either_dict_or_kwargs(None, indexers_kwargs, "isel")
+
+    invalid = indexers.keys() - set(da.dims)
+    if invalid:
+        raise ValueError("dimensions %r do not exist" % invalid)
+
+    indexing_widgets = {}
+    for dim in da.dims:
+        if dim in indexers:
+            indexing_widgets[dim] = indexers[dim]
+        else:
+            indexing_widgets[dim] = widgets.fixed(slice(None))
+
+    return indexing_widgets
 
 
 def variables(*args, func=None, func_kwargs={}):
@@ -106,4 +122,4 @@ def variables(*args, func=None, func_kwargs={}):
 
     variable_widgets = {wigetize_vars(data=obj) for obj in args}
     wrapped_func = functools.partial(func, *args, **func_kwargs)
-    return interact(wrapped_func, **variable_widgets)
+    return widgets.interact(wrapped_func, **variable_widgets)
