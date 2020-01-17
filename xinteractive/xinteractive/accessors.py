@@ -1,7 +1,7 @@
-from xarray import register_dataarray_accessor
+from xarray import register_dataarray_accessor, register_dataset_accessor
 import xarray.plot as xplt
 
-import interactions
+from . import interactions
 
 
 @register_dataarray_accessor('interactive')
@@ -82,7 +82,7 @@ class InteractiveDataArrayAccessor:
 
 
 @register_dataset_accessor('interactive')
-class InteractiveDataArrayAccessor:
+class InteractiveDatasetAccessor:
     def __init__(self, ds):
         self.ds = ds
 

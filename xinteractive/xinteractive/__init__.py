@@ -1,2 +1,3 @@
-import interactions as interactive
-from accessors import InteractiveDataArrayAccessor, InteractiveDataSetAccessor
+from . import interactions
+
+from .accessors import InteractiveDataArrayAccessor, InteractiveDatasetAccessor
