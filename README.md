@@ -15,6 +15,10 @@ and getting this plot with time slider (example from [holoviews]()), but interac
 
 ![hvplot example](https://github.com/TomNicholas/xarray-interactive/raw/master/images/hvplot_example.png "Title")
 
+### Aims
+
+To eventually implement all of the API shown in the [examples](https://github.com/TomNicholas/xarray-interactive/raw/master/examples.ipynb)
+
 
 ### Useful links
 
