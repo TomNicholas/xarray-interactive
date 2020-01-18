@@ -1,20 +1,22 @@
-import ipywidgets as widgets
+import ipywidgets as ipy
 
 from xarray.core.utils import either_dict_or_kwargs
 
+from .widget_factories import IndexerWidgetFactory
 
-def indexing(da, func, func_kwargs={}, continuous_update=True,
-             **indexers_kwargs):
+
+def isel(da, func, indexers=None, func_kwargs={}, continuous_update=False,
+         **indexers_kwargs):
     """
     Interactively choose indexes of a DataArray on which to apply func.
 
     Use in the same way as ipyywidgets.interact, i.e. as a function
 
-    `interactive.indexing(f=lambda da: np.sin(da), time=20, position=4.5)`
+    `interactive.isel(f=lambda da: np.sin(da), time=20, position=4.5)`
 
     or as a decorator
 
-    `@interactive.indexing(time=20, position=4.5)
+    `@interactive.isel(time=20, position=4.5)
     lambda da: np.sin(da)`
 
     Both syntaxes would apply `np.sin`, but create interactive sliders for time
@@ -27,11 +29,11 @@ def indexing(da, func, func_kwargs={}, continuous_update=True,
     func_kwargs
         Keyword arguments to pass directly to the function.
     continuous_update : bool, optional
-        If False, will only update when mouse is released, not while
-        slider is dragged. Default is True.
+        If True, will update while slider is dragged, rather than only when
+        mouse is released. Default is False.
     indexing_kwargs
-        Keyword arguments matching those which would be valid for the
-        `.sel` and `.isel` methods on this DataArray.
+        Keyword arguments matching those which would be valid for the `.isel`
+        method on this DataArray.
 
     Returns
     -------
@@ -42,49 +44,33 @@ def indexing(da, func, func_kwargs={}, continuous_update=True,
         raise ValueError("Must provide function to apply")
     # TODO inspect func to ensure it's a valid function on a DataArray?
 
-    indexing_widgets = wigetize_indexers(da, **indexers_kwargs)
-    return widgets.interact(func, da=widgets.fixed(da), **indexing_widgets,
-                            continuous_update=continuous_update)
-
-
-def wigetize_indexers(da, *indexers, **indexers_kwargs):
-    """
-    Developer API for constructing widgets from a DataArray and its indexing
-    arguments.
-
-    Creates a slider for each dimension.
-
-    Parameters
-    ----------
-    da
-    indexing_kwargs
-
-    Returns
-    -------
-    selection_widgets
-    """
-
-    # TODO if dim use isel, if coord use sel?
-
-    # Apply same logic that's in `xarray.variable.isel()`
-    # TODO relax indexers=None constraint by adding it as positional args?
-    if indexers is not ():
-        print(indexers)
-        raise NotImplementedError("Currently only accepting kwarg indexers")
-    indexers = either_dict_or_kwargs(None, indexers_kwargs, "isel")
+    if indexers:
+        raise NotImplementedError
+    indexers = either_dict_or_kwargs(indexers, indexers_kwargs, "isel")
 
     invalid = indexers.keys() - set(da.dims)
     if invalid:
         raise ValueError("dimensions %r do not exist" % invalid)
 
+    factory = IndexerWidgetFactory(da, 'isel',
+                                   continuous_update=continuous_update)
+
     indexing_widgets = {}
+    fixed_indexers = {}
     for dim in da.dims:
         if dim in indexers:
-            indexing_widgets[dim] = indexers[dim]
+            indexer = (dim, indexers[dim])  # TODO neater way
+            indexing_widgets[dim] = factory.wigetize(indexer)
         else:
-            indexing_widgets[dim] = widgets.fixed(slice(None))
+            fixed_indexers[dim] = slice(None)
 
-    return indexing_widgets
+    # Use closure to bypass interrogation of all args by ipywidgets.interactive
+    # (see https://github.com/jupyter-widgets/ipywidgets/issues/2740)
+    def _isel_then_func_with_fixed_args(**indexing_widgets):
+        interactive_slice = da.isel(**fixed_indexers, **indexing_widgets)
+        return func(interactive_slice, **func_kwargs)
+
+    return ipy.interactive(_isel_then_func_with_fixed_args, **indexing_widgets)
 
 
 def variables(*args, func=None, func_kwargs={}):

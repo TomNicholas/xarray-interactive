@@ -14,7 +14,7 @@ from xarray import DataArray
 
 
 class WidgetFactory:
-    def __init__(self, da, continuous_update=True):
+    def __init__(self, da, continuous_update=False):
         self.da = da
         self.continuous_update = continuous_update
 
@@ -27,8 +27,8 @@ class IndexerWidgetFactory(WidgetFactory):
     # TODO animations using the Play widget?
     # TODO handle dates
 
-    def __init__(self, da, indexing_method):
-        super.__init__(da)
+    def __init__(self, da, indexing_method, continuous_update=False):
+        super().__init__(da, continuous_update)
         self.indexing_method = indexing_method
 
     def wigetize(self, indexer):
