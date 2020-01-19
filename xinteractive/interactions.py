@@ -67,6 +67,13 @@ def isel(da, func, indexers=None, func_kwargs={}, continuous_update=False,
     # Use closure to bypass interrogation of all args by ipywidgets.interactive
     # (see https://github.com/jupyter-widgets/ipywidgets/issues/2740)
     def _isel_then_func_with_fixed_args(**indexing_widgets):
+
+        # Some widgets must be converted back to xarray-compatible inputs
+        # TODO instead make special slider subclasses?
+        for dim, indexer in indexing_widgets.items():
+            if isinstance(indexer, tuple):
+                indexing_widgets[dim] = slice(*indexer)
+
         interactive_slice = da.isel(**fixed_indexers, **indexing_widgets)
         return func(interactive_slice, **func_kwargs)
 

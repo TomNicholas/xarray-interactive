@@ -67,6 +67,7 @@ class IndexerWidgetFactory(WidgetFactory):
             raise NotImplementedError
 
         elif isinstance(selection, slice):
+            # TODO deal with Nones in slices
             slider = ipy.IntRangeSlider(
                 value=[selection.start, selection.stop],
                 min=0,
