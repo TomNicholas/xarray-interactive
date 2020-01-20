@@ -70,6 +70,7 @@ def isel(da, func, indexers=None, func_kwargs={}, continuous_update=False,
 
         # Some widgets must be converted back to xarray-compatible inputs
         # TODO instead make special slider subclasses?
+        # https://github.com/jupyter-widgets/ipywidgets/blob/master/ipywidgets/widgets/widget_int.py
         for dim, indexer in indexing_widgets.items():
             if isinstance(indexer, tuple):
                 indexing_widgets[dim] = slice(*indexer)
