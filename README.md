@@ -1,5 +1,5 @@
-Repo for working ideas on making xarray interactive through ipython
-widgets.
+Repo for working ideas on making [xarray](https://github.com/pydata/xarray) interactive through [ipython
+widgets](https://towardsdatascience.com/interactive-controls-for-jupyter-notebooks-f5c94829aee6).
 
 ## Proposal: xarray.interactive module
 
@@ -22,5 +22,6 @@ To eventually implement all of the API shown in the [examples](https://github.co
 
 ### Useful links
 
+- [Quick intro to the power of interactivity with ipython widgets in jupyter environments](https://towardsdatascience.com/interactive-controls-for-jupyter-notebooks-f5c94829aee6)
 - [Introduction to ipywidgets `interact()` function, which we want to emulate.](https://ipywidgets.readthedocs.io/en/latest/examples/Using%20Interact.html)
 - [Making interact ignore arguments](https://github.com/jupyter-widgets/ipywidgets/issues/2740)
